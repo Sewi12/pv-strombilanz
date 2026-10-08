@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>PV-Strombilanz v3</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top"><div class="topin">
+  <div class="brand"><div class="logo">ϟ</div><div><h1>PV-Strombilanz</h1><small>PV · Stromkosten · OeMAG · Amortisation</small></div></div>
+  <span class="version">v3 · 0.2.0</span>
+</div></header>
+<nav class="nav" id="nav">
+  <button class="active" data-page="dashboard">Übersicht</button>
+  <button data-page="oemag">OeMAG</button>
+  <button data-page="months">Monatsdaten</button>
+  <button data-page="amortization">Amortisation</button>
+  <button data-page="tariff">Stromtarif</button>
+  <button data-page="settings">Einstellungen</button>
+</nav>
+<main>
+<section id="dashboard" class="page active">
+  <div id="reminder"></div>
+  <div class="pagehead"><div><h2>Übersicht</h2><p>Gesamtanlage · gemeinsame Amortisation</p></div></div>
+  <div class="cards four">
+    <article class="card metric"><span>Gesamtinvestition brutto</span><strong>21.148,80 €</strong><small>PV + Speicher + Wechselrichter</small></article>
+    <article class="card metric"><span>Nach Förderungen</span><strong id="dNet">16.988,80 €</strong><small>Amortisationsbasis</small></article>
+    <article class="card metric"><span>Bisher erwirtschaftet</span><strong id="dRecovered">0,00 €</strong><small>OeMAG + Eigenverbrauch</small></article>
+    <article class="card metric"><span>Noch offen</span><strong id="dOpen">16.988,80 €</strong><small>bis zur Amortisation</small></article>
+  </div>
+  <div class="grid two">
+    <article class="card">
+      <h3>Amortisation</h3>
+      <div class="rows">
+        <div><span>Förderungen</span><b>4.160,00 €</b></div>
+        <div><span>Ø wirtschaftlicher Ertrag/Jahr</span><b id="dAnnual">–</b></div>
+        <div><span>Restlaufzeit</span><b id="dYears">Noch nicht berechenbar</b></div>
+        <div><span>Voraussichtlich amortisiert</span><b id="dDate">Noch nicht berechenbar</b></div>
+      </div>
+      <div class="progress"><i id="dBar"></i></div><small id="dPct">0,0 % amortisiert</small>
+    </article>
+    <article class="card">
+      <h3>Aktueller Stromtarif</h3>
+      <div class="rows">
+        <div><span>Arbeitspreis</span><b>14,90 ct/kWh brutto</b></div>
+        <div><span>Grundpreis</span><b>4,62 €/Monat brutto</b></div>
+        <div><span>Referenzverbrauch</span><b>4.936,6 kWh/Jahr</b></div>
+        <div><span>Energiepreis bei Referenzverbrauch</span><b>735,56 €/Jahr</b></div>
+      </div>
+      <small>Der Grundpreis wird separat geführt.</small>
+    </article>
+  </div>
+  <article class="card">
+    <div class="cardhead"><div><h3>OeMAG 2026</h3><small>Manuell erfasste Gutschriften</small></div><button class="btn green" onclick="App.page('oemag')">+ Gutschrift</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Monat</th><th>Einspeisung</th><th>Marktpreis</th><th>Gutschrift</th></tr></thead><tbody id="dOe"></tbody></table></div>
+  </article>
+</section>
+
+<section id="oemag" class="page">
+  <div class="pagehead"><div><h2>OeMAG</h2><p>Monatliche Gutschriften manuell erfassen</p></div></div>
+  <article class="card">
+    <h3>Gutschrift hinzufügen / ändern</h3>
+    <div class="form four">
+      <label>Abrechnungsmonat<input id="oMonth" type="month"></label>
+      <label>Einspeisung (kWh)<input id="oKwh" type="number" step="0.01"></label>
+      <label>Marktpreis (ct/kWh)<input id="oPrice" type="number" step="0.0001"></label>
+      <label>Tatsächliche Gutschrift (€)<input id="oCredit" type="number" step="0.01"></label>
+    </div>
+    <div id="oCheck" class="hint"></div>
+    <div class="actions"><button class="btn green" onclick="Oemag.save()">Speichern</button><button class="btn light" onclick="Oemag.clear()">Leeren</button></div>
+  </article>
+  <article class="card">
+    <div class="cardhead"><h3>Erfasste Gutschriften</h3><b id="oTotal">0,00 €</b></div>
+    <div class="tablewrap"><table><thead><tr><th>Monat</th><th>Einspeisung</th><th>Marktpreis</th><th>Erwartet</th><th>Gutschrift</th><th>Abweichung</th><th></th></tr></thead><tbody id="oTable"></tbody></table></div>
+  </article>
+</section>
+
+<section id="months" class="page">
+  <div class="pagehead"><div><h2>Monatsdaten</h2><p>Bis zur SolaX-Anbindung manuell erfassen</p></div></div>
+  <article class="card">
+    <h3>Monat erfassen</h3>
+    <div class="form three">
+      <label>Monat<input id="mMonth" type="month"></label>
+      <label>PV-Ertrag (kWh)<input id="mPv" type="number" step="0.01"></label>
+      <label>Eigenverbrauch (kWh)<input id="mSelf" type="number" step="0.01"></label>
+      <label>Netzbezug (kWh)<input id="mGrid" type="number" step="0.01"></label>
+      <label>Einspeisung (kWh)<input id="mFeed" type="number" step="0.01"></label>
+      <label>Stromkosten brutto (€)<input id="mCost" type="number" step="0.01"></label>
+    </div>
+    <div class="actions"><button class="btn green" onclick="Months.save()">Speichern</button><button class="btn light" onclick="Months.clear()">Leeren</button></div>
+  </article>
+  <article class="card"><div class="tablewrap"><table><thead><tr><th>Monat</th><th>PV</th><th>Eigenverbrauch</th><th>Netzbezug</th><th>Einspeisung</th><th>Kosten</th><th></th></tr></thead><tbody id="mTable"></tbody></table></div></article>
+</section>
+
+<section id="amortization" class="page">
+  <div class="pagehead"><div><h2>Amortisation der Gesamtanlage</h2><p>Eine gemeinsame Wirtschaftlichkeitsrechnung</p></div></div>
+  <div class="grid two">
+    <article class="card"><h3>Investition</h3><div class="rows">
+      <div><span>PV-Anlage 2021</span><b>12.000,00 €</b></div>
+      <div><span>Speicher + Wechselrichter 2026</span><b>9.148,80 €</b></div>
+      <div><span>Gesamt brutto</span><b>21.148,80 €</b></div>
+      <div><span>Förderungen</span><b>4.160,00 €</b></div>
+      <div><span>Nach Förderung</span><b>16.988,80 €</b></div>
+    </div></article>
+    <article class="card"><h3>Prognose</h3><div class="rows">
+      <div><span>Bisher erwirtschaftet</span><b id="aRecovered">0,00 €</b></div>
+      <div><span>Noch offen</span><b id="aOpen">16.988,80 €</b></div>
+      <div><span>Ø Ertrag/Jahr</span><b id="aAnnual">–</b></div>
+      <div><span>Restlaufzeit</span><b id="aYears">Noch nicht berechenbar</b></div>
+      <div><span>Voraussichtlich amortisiert</span><b id="aDate">Noch nicht berechenbar</b></div>
+    </div><div class="progress"><i id="aBar"></i></div><small id="aPct">0,0 % amortisiert</small></article>
+  </div>
+  <div class="alert"><b>Hinweis:</b> Die Prognose wird mit jedem echten Monatsdatensatz besser. Aktuell werden OeMAG-Gutschriften und der Eigenverbrauch mit 14,90 ct/kWh bewertet.</div>
+</section>
+
+<section id="tariff" class="page">
+  <div class="pagehead"><div><h2>Stromtarif</h2><p>Ökostrom Loyal</p></div></div>
+  <article class="card"><div class="rows">
+    <div><span>Arbeitspreis</span><b>14,90 ct/kWh brutto</b></div>
+    <div><span>Grundpreis</span><b>4,62 €/Monat brutto</b></div>
+    <div><span>Jahres-Grundpreis</span><b>55,44 €</b></div>
+    <div><span>Referenzverbrauch</span><b>4.936,6 kWh/Jahr</b></div>
+  </div></article>
+  <article class="card"><h3>Energie AG – letzte Jahresrechnung</h3><div class="rows">
+    <div><span>Verbrauch 01.03.2025–28.02.2026</span><b>4.936,6 kWh</b></div>
+    <div><span>Gesamtrechnung brutto</span><b>1.671,43 €</b></div>
+    <div><span>Energielieferung</span><b>864,54 €</b></div>
+    <div><span>Aktueller Teilbetrag</span><b>132,00 €/Monat</b></div>
+  </div></article>
+</section>
+
+<section id="settings" class="page">
+  <div class="pagehead"><div><h2>Einstellungen</h2><p>Daten bleiben zunächst lokal im Browser.</p></div></div>
+  <article class="card"><h3>OeMAG-Erinnerung</h3><p class="small">Ab dem 10. des Folgemonats wird in der App eine Erinnerung angezeigt, wenn die Gutschrift des Vormonats fehlt.</p></article>
+  <article class="card"><h3>Datensicherung</h3><p class="small">Du kannst die eingegebenen Daten exportieren und später wieder importieren.</p><div class="actions"><button class="btn" onclick="Storage.export()">Daten exportieren</button><label class="btn light" for="importFile">Daten importieren</label><input id="importFile" type="file" accept=".json" hidden></div></article>
+  <article class="card"><h3>Version</h3><p><b>v3 · 0.2.0</b></p><p class="small">Grundversion der neu aufgebauten PV-Strombilanz-App.</p></article>
+</section>
+</main>
+<footer>PV-Strombilanz v3 · Version 0.2.0</footer>
+<script src="js/storage.js"></script>
+<script src="js/oemag.js"></script>
+<script src="js/energy.js"></script>
+<script src="js/amortization.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
