@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PV-Strombilanz</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f4f6f8;color:#18212b}
+header{background:#111827;color:#fff;padding:24px 20px}
+main{max-width:1100px;margin:auto;padding:20px}
+h1{margin:0 0 5px;font-size:28px}.muted{color:#667085}.darkmuted{color:#cbd5e1}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.card{background:white;border-radius:16px;padding:18px;box-shadow:0 2px 10px #0000000d}
+.kpi{font-size:26px;font-weight:750;margin-top:6px}
+.section{margin-top:22px}.section h2{font-size:19px}
+label{display:block;font-size:13px;font-weight:650;margin-bottom:5px}
+input,select{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #d0d5dd;border-radius:9px;font-size:15px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+button{border:0;border-radius:10px;padding:11px 15px;background:#111827;color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#e5e7eb;color:#111827}
+.good{color:#16803c}.bad{color:#b42318}.accent{color:#175cd3}
+.bar{height:12px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin:10px 0}.bar>div{height:100%;background:#111827}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #eaecf0;font-size:14px}
+.small{font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+</style>
+</head>
+<body>
+<header><main style="padding:0">
+<div class="darkmuted">PV + Stromkosten + Amortisation</div>
+<h1>⚡ Meine Strombilanz</h1>
+<div id="sub" class="darkmuted"></div>
+</main></header>
+<main>
+<section class="grid">
+<div class="card"><div class="muted">Netzbezug</div><div class="kpi" id="kNetz">–</div></div>
+<div class="card"><div class="muted">PV-Erzeugung</div><div class="kpi" id="kPv">–</div></div>
+<div class="card"><div class="muted">Einspeisung</div><div class="kpi" id="kFeed">–</div></div>
+<div class="card"><div class="muted">Monatliche Zahlung</div><div class="kpi" id="kPay">–</div></div>
+<div class="card"><div class="muted">Monatlicher Saldo</div><div class="kpi" id="kSaldo">–</div></div>
+</section>
+
+<section class="card section">
+<h2>Monat erfassen</h2>
+<div class="form">
+<div><label>Monat</label><select id="month"></select></div>
+<div><label>Stromverbrauch gesamt (kWh)</label><input id="cons" type="number" step="0.1"></div>
+<div><label>PV-Erzeugung (kWh)</label><input id="pv" type="number" step="0.1"></div>
+<div><label>Einspeisung (kWh)</label><input id="feed" type="number" step="0.1"></div>
+<div><label>Netzbezug (kWh)</label><input id="grid" type="number" step="0.1"></div>
+<div><label>Stromkosten Netzbezug (€)</label><input id="cost" type="number" step="0.01"></div>
+<div><label>Einspeiseerlös (€)</label><input id="revenue" type="number" step="0.01"></div>
+<div><label>Teilbetrag Energie AG (€)</label><input id="pay" type="number" step="0.01"></div>
+</div>
+<div class="actions"><button onclick="saveMonth()">Monat speichern</button><button class="secondary" onclick="clearMonth()">Eingaben leeren</button></div>
+<p class="small muted">Die Werte werden zunächst nur in diesem Browser gespeichert. PV-Erzeugung/Einspeisung sind noch manuell – SolaX kommt später.</p>
+</section>
+
+<section class="grid section">
+<div class="card"><div class="muted">Stromkosten</div><div class="kpi" id="mCost">–</div></div>
+<div class="card"><div class="muted">Einspeiseerlös</div><div class="kpi" id="mRev">–</div></div>
+<div class="card"><div class="muted">Effektive Monatskosten</div><div class="kpi" id="mNet">–</div></div>
+<div class="card"><div class="muted">Eigenverbrauchsquote</div><div class="kpi" id="mSelf">–</div></div>
+</section>
+
+<section class="card section">
+<h2>Jahresübersicht</h2>
+<div class="grid">
+<div><div class="muted">Einzahlungen</div><div class="kpi" id="yPay">–</div></div>
+<div><div class="muted">Netzkosten</div><div class="kpi" id="yCost">–</div></div>
+<div><div class="muted">Einspeiseerlöse</div><div class="kpi" id="yRev">–</div></div>
+<div><div class="muted">Aktueller Saldo</div><div class="kpi" id="yBal">–</div></div>
+</div>
+<p class="small muted">Saldo = bisher eingezahlte Teilbeträge − tatsächliche Netzkosten + Einspeiseerlöse. Die endgültige Jahresabrechnung kann davon abweichen.</p>
+</section>
+
+<section class="card section">
+<h2>Investitionen & Amortisation</h2>
+<div class="form">
+<div><label>PV-Anlage – Anschaffung (€)</label><input id="pvInv" type="number" step="1" placeholder="unbekannt möglich"></div>
+<div><label>PV-Förderung (€)</label><input id="pvGrant" type="number" step="1"></div>
+<div><label>Wechselrichter 2026 (€)</label><input id="inv" type="number" step="1"></div>
+<div><label>Speicher 2026 (€)</label><input id="bat" type="number" step="1"></div>
+<div><label>Förderung Speicher/WR (€)</label><input id="grant2" type="number" step="1"></div>
+<div><label>Effektiver Wert selbst verbrauchter kWh (ct/kWh)</label><input id="avoid" type="number" step="0.01" value="25"></div>
+</div>
+<div class="actions"><button onclick="saveInvest()">Investitionen speichern</button></div>
+<div style="margin-top:18px">
+<div class="muted">Erfasster wirtschaftlicher Vorteil seit Start der Aufzeichnung</div>
+<div class="kpi" id="amBenefit">–</div>
+<div class="bar"><div id="amBar" style="width:0%"></div></div>
+<div id="amText" class="small"></div>
+</div>
+<p class="small muted">Für eine belastbare Amortisation müssen Eigenverbrauch, Einspeiseerlös und Investitionskosten vollständig sein. Historische PV-Daten können später ergänzt werden.</p>
+</section>
+
+<section class="card section">
+<h2>Rechnungsbasis Energie AG</h2>
+<p>Aus der vorhandenen Jahresrechnung 01.03.2025–28.02.2026 übernommen:</p>
+<table>
+<tr><th>Verbrauch</th><td>4.936,6 kWh</td></tr>
+<tr><th>Gesamtrechnung inkl. USt</th><td>1.671,43 €</td></tr>
+<tr><th>vorgeschriebene Teilbeträge</th><td>12 × 134,40 €</td></tr>
+<tr><th>aktueller Teilbetrag ab März 2026</th><td>132,00 € monatlich</td></tr>
+<tr><th>Ökostrom Komfort – Arbeitspreis 01.04.2025–28.02.2026</th><td>16,2167 ct/kWh</td></tr>
+</table>
+<p class="small muted">Die Rechnung enthält getrennte Energie-, Netz- sowie Abgabenpositionen. Für aktuelle Kalkulationen verwenden wir diese historischen Werte nur als Ausgangsbasis und machen die Preise editierbar.</p>
+</section>
+</main>
+<script>
+const KEY='pv-strombilanz-v2';
+const data=JSON.parse(localStorage.getItem(KEY)||'{"months":{},"invest":{}}');
+const months=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const year=new Date().getFullYear();
+const sel=document.getElementById('month');
+months.forEach((m,i)=>{let o=document.createElement('option');o.value=i+1;o.textContent=m+' '+year;sel.appendChild(o)});
+sel.value=new Date().getMonth()+1;
+function euro(x){return (Number(x)||0).toLocaleString('de-AT',{style:'currency',currency:'EUR'})}
+function num(x){return (Number(x)||0).toLocaleString('de-AT',{maximumFractionDigits:1})}
+function loadMonth(){
+ const d=data.months[sel.value]||{pay:132};
+ for(const id of ['cons','pv','feed','grid','cost','revenue','pay']) document.getElementById(id).value=d[id]??'';
+ document.getElementById('pay').value=d.pay??132;
+ render();
+}
+function saveMonth(){
+ const d={}; for(const id of ['cons','pv','feed','grid','cost','revenue','pay']) d[id]=Number(document.getElementById(id).value)||0;
+ data.months[sel.value]=d; localStorage.setItem(KEY,JSON.stringify(data)); render();
+}
+function clearMonth(){['cons','pv','feed','grid','cost','revenue'].forEach(id=>document.getElementById(id).value='');document.getElementById('pay').value=132;render()}
+function saveInvest(){
+ data.invest={pvInv:Number(pvInv.value)||0,pvGrant:Number(pvGrant.value)||0,inv:Number(inv.value)||0,bat:Number(bat.value)||0,grant2:Number(grant2.value)||0,avoid:Number(avoid.value)||25};
+ localStorage.setItem(KEY,JSON.stringify(data));render();
+}
+function render(){
+ const d=data.months[sel.value]||{};
+ const cons=Number(d.cons)||0,pv=Number(d.pv)||0,feed=Number(d.feed)||0,grid=Number(d.grid)||0,cost=Number(d.cost)||0,rev=Number(d.revenue)||0,pay=Number(d.pay)||0;
+ kNet.textContent=num(grid)+' kWh';kPv.textContent=num(pv)+' kWh';kFeed.textContent=num(feed)+' kWh';kPay.textContent=euro(pay);
+ const saldo=pay-cost+rev;kSaldo.textContent=(saldo>=0?'+':'')+euro(saldo);kSaldo.className='kpi '+(saldo>=0?'good':'bad');
+ mCost.textContent=euro(cost);mRev.textContent=euro(rev);mNet.textContent=euro(cost-rev);
+ const self=cons?Math.max(0,(cons-grid))/cons:0;mSelf.textContent=(self*100).toFixed(1)+' %';
+ let yp=0,yc=0,yr=0; Object.values(data.months).forEach(x=>{yp+=Number(x.pay)||0;yc+=Number(x.cost)||0;yr+=Number(x.revenue)||0});
+ yPay.textContent=euro(yp);yCost.textContent=euro(yc);yRev.textContent=euro(yr);
+ const bal=yp-yc+yr;yBal.textContent=(bal>=0?'+':'')+euro(bal);yBal.className='kpi '+(bal>=0?'good':'bad');
+ const I=data.invest||{};for(const [id,key] of [['pvInv','pvInv'],['pvGrant','pvGrant'],['inv','inv'],['bat','bat'],['grant2','grant2'],['avoid','avoid']])document.getElementById(id).value=I[key]??(id==='avoid'?25:'');
+ const avoidV=Number(I.avoid)||25;let benefit=0;Object.values(data.months).forEach(x=>{const c=Number(x.cons)||0,g=Number(x.grid)||0,r=Number(x.revenue)||0;const selfK=Math.max(0,c-g);benefit+=selfK*avoidV/100+r});
+ amBenefit.textContent=euro(benefit);
+ const total=Math.max(0,(Number(I.pvInv)||0)-(Number(I.pvGrant)||0)) + Math.max(0,(Number(I.inv)||0)+(Number(I.bat)||0)-(Number(I.grant2)||0));
+ const pct=total?Math.min(100,benefit/total*100):0;amBar.style.width=pct+'%';amText.textContent=total?`${pct.toFixed(1)} % der erfassten Investition rechnerisch erwirtschaftet · Investition ${euro(total)}`:'Investitionskosten noch nicht vollständig eingetragen.';
+ sub.textContent='Jahresrechnung als Ausgangsbasis · aktueller Teilbetrag 132 € / Monat';
+}
+sel.addEventListener('change',loadMonth);loadMonth();
+</script>
+</body></html>
