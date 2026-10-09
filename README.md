@@ -1,17 +1,11 @@
 # PV-Strombilanz v3
 
-Version 0.2.0
+Version 0.2.1
 
-## Enthalten
-- Gesamtinvestition brutto: 21.148,80 €
-- Förderungen: 4.160,00 €
-- Investition nach Förderung: 16.988,80 €
-- gemeinsame Amortisation der Gesamtanlage
-- manuelle OeMAG-Gutschriften
-- manuelle Monatsdaten
-- Ökostrom Loyal: 14,90 ct/kWh brutto + 4,62 €/Monat brutto
-- lokale Speicherung im Browser
-- Datenexport/-import
+- Monatsdaten: PV-Erzeugung, Gesamtverbrauch, Eigenverbrauch, Netzbezug, Einspeisung
+- Plausibilitätsprüfung der Energiemengen
+- Monatsabschluss-Erinnerung ab dem 5. des Folgemonats
+- Tägliche Prüfung, bis die Monatsdaten und OeMAG-Daten vollständig sind
+- Lokale Speicherung im Browser
 
-## GitHub Pages
-Die Datei `index.html` muss im Repository-Root liegen.
+Hinweis: Echte Push-Benachrichtigungen bei vollständig geschlossener Website benötigen als nächsten Schritt eine PWA/Service-Worker-Erweiterung.
