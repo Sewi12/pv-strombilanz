@@ -1,11 +1,18 @@
-# PV-Strombilanz v3
+# PV-Strombilanz v4
 
-Version 0.2.2
+Version 4.0
 
-- Preisangaben und Auszahlungen werden durchgehend als Bruttowerte geführt.
-- Arbeitspreis und monatlicher Grundpreis sind ausdrücklich als brutto gekennzeichnet.
-- OeMAG-Auszahlungen werden als tatsächlicher Brutto-Auszahlungsbetrag erfasst.
-- Monatsdaten: PV-Erzeugung, Gesamtverbrauch, Eigenverbrauch, Netzbezug und Einspeisung.
-- Plausibilitätsprüfung und Monatsabschluss-Erinnerung ab dem 5. des Folgemonats.
+Alle Strompreise und ursprünglichen Investitionskosten werden brutto angezeigt.
 
-Hinweis: Echte Push-Benachrichtigungen bei vollständig geschlossener Website benötigen eine PWA/Service-Worker-Erweiterung.
+## Investitionen
+- PV-Anlage 2021: 12.000,00 € brutto
+- Förderung PV: 2.000,00 €
+- PV-Investition nach Förderung: 10.000,00 €
+- Wechselrichter + Speicher + Installation 2026: 9.148,80 € brutto
+- Förderung Wechselrichter/Speicher: 2.160,00 €
+- Investition nach Förderung: 6.988,80 €
+- Gesamtinvestition brutto: 21.148,80 €
+- Gesamtförderungen: 4.160,00 €
+- Gesamtinvestition nach Förderungen: 16.988,80 €
+
+Alle genannten ursprünglichen Investitionsbeträge sind bereits brutto; Umsatzsteuer wird nicht nochmals hinzugerechnet.
